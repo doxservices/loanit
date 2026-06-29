@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -391,7 +391,8 @@
     .schedule-table td:nth-child(1),
     .schedule-table td:nth-child(2),
     .schedule-table td:nth-child(3),
-    .schedule-table td:nth-child(4) { text-align: center; }
+    .schedule-table td:nth-child(4),
+    .schedule-table td:nth-child(5) { text-align: center; }
 
     @media print {
       body { background: #fff; }
@@ -1007,6 +1008,8 @@
       const count = getPaymentCount();
       const startDate = parseDateInput(startDateEl.value);
       const amount = moneyValue(paymentAmountEl);
+      const loanAmountNum = parseMoneyValue(loanAmountEl.value);
+      const paymentAmountNum = parseMoneyValue(paymentAmountEl.value);
       const rows = [];
 
       for (let i = 0; i < count; i++) {
@@ -1016,11 +1019,20 @@
             ? formatDate(addMonths(startDate, i))
             : formatDate(addDays(startDate, i * 14));
 
+        let balance;
+        if (!Number.isFinite(loanAmountNum) || !Number.isFinite(paymentAmountNum)) {
+          balance = 'J$ __________';
+        } else {
+          const remaining = i === count - 1 ? 0 : Math.max(0, loanAmountNum - paymentAmountNum * (i + 1));
+          balance = remaining === 0 ? 'J$0.00' : `J$${numberFormatter.format(remaining)}`;
+        }
+
         rows.push({
           number: i + 1,
           date: paymentDate,
           terms: frequencyLabel(),
-          amount
+          amount,
+          balance
         });
       }
       return rows;
@@ -1040,6 +1052,7 @@
           <td>${row.date}</td>
           <td>${row.terms}</td>
           <td>${row.amount}</td>
+          <td>${row.balance}</td>
         </tr>
       `).join('');
 
@@ -1077,10 +1090,11 @@
             <table class="schedule-table">
               <thead>
                 <tr>
-                  <th style="width: 12%;">No.</th>
-                  <th style="width: 30%;">Payment Date</th>
-                  <th style="width: 28%;">Repayment Terms</th>
-                  <th style="width: 30%;">Payment Amount</th>
+                  <th style="width: 8%;">No.</th>
+                  <th style="width: 23%;">Payment Date</th>
+                  <th style="width: 23%;">Repayment Terms</th>
+                  <th style="width: 23%;">Payment Amount</th>
+                  <th style="width: 23%;">Remaining Balance</th>
                 </tr>
               </thead>
               <tbody>${bodyRows}</tbody>
@@ -1270,3 +1284,4 @@
   </script>
 </body>
 </html>
+
